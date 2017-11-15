@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>查看考试结果</title>
+    <script src="jquery.min.js"></script>
+    <script>
+        /*extrat url parameter from exam page*/
+//        send name as the parameter of this function, name represent each variable before "="
+//        total use three steps,generate reg object->match url->return parameter array result.
+        function getUrlParam(name) {
+            var reg= new RegExp("(^|&)"+name+"=([^&]*)(&|$)");
+            var r=window.location.search.substr(1).match(reg);
+            if(r!=null){return decodeURI(r[2]);}
+            return null;
+        }
+        function extract_answer_score() {
+            /*correct answer*/
+            var answer=["统一建模语言","封装性","继承性","多态性","B","A","ABD","ABC","F","T","模型是对现实世界的简化和抽象，模型是对所研究的系统、过程、事物或概念的一种表达形式，可以是物理试题；可以是某种图像；或者是一种数学表达形式"];
+
+            /*score of each problem match the url parameter*/
+            var answer_score=[5,10,20];
+            /*extract user answer from【"display_score.html?section1="+4+"section2_and_section3="+4+"section4="+2+"section5="+1+"&json="+json】*/
+            /*["11", "33434", "jl", "刚刚", "尴尬的风格", "各个地方", "根深蒂固", "B", "D", "CD", "AB", "T", "F", "发的顺风顺丰公司各个分公司"]*/
+            var user_answer=JSON.parse(getUrlParam("json"));                      //refer to the user answer array.
+            var fillBlankNum=parseInt(getUrlParam("section1"));                  //refer to completion number【4】.
+            var radioCheckboxNum=parseInt(getUrlParam("section2_and_section3")); //refer to chioce questions number【4】.
+            var TrueFalseNum=parseInt(getUrlParam("section4"));                   //refer to True or false number【2】.
+            var fillTextareaNum=parseInt(getUrlParam("section5"));                //refer to objective probelm number【1】.
+
+            var total_score=0;
+            var answer_state=[];        //each of the answer is correct or not
+            var fillBlankScore=0;
+            var radioCheckboxScore=0
+            var fillTextareaScore=0;
+
+            if(user_answer[3]==answer[0]){fillBlankScore+=answer_score[0];answer_state[0]="正确";}
+            else {answer_state[0]="错误";}
+
+            /*judge the last three question of the fillBlank module.*/
+            for(var i=4;i<7;i++){
+
+                for(var j=1;j<4;j++){
+                    if(user_answer[i]===answer[j]){
+                        answer_state[i-3]="正确";
+                        fillBlankScore+=5;
+
+                    }
+//               //if in one loop ,all values can not be matched, the this blank will be recognized as false.
+                }
+                if(answer_state[i-3]!='正确'){
+                    answer_state[i-3]!='错误';
+                }
+
+            }
+           /*judge the chioce question, including radio & checkbox.*/
+            var answer_chioce_portion=answer.slice(4,10);
+            var user_chioce_portion=user_answer.slice(7,13);
+
+            for(var count=0;count<answer_chioce_portion.length;count++){
+                if(answer_chioce_portion[count]===user_chioce_portion[count]){
+                    console.log("this is radioCheckboxScore-0-"+radioCheckboxScore);
+
+                    radioCheckboxScore+=10;
+//                    radioCheckboxScore+=Number(answer_score[1]);
+                    console.log("this is radioCheckboxScore-1-"+radioCheckboxScore);
+
+                    answer_state[4+count]="正确";
+                }else {
+                    answer_state[4+count]="错误";
+
+                }
+            }
+            console.log("this is radioCheckboxScore"+radioCheckboxScore);
+
+            /*for some lazy reason,I put all judge the true or false questions score into radio_check_score.*/
+
+            /*judge if the objective question is correct or not.*/
+            if(answer[10]===user_answer[13]){fillTextareaScore=20;answer_state[10]="正确"; }
+            else {answer_state[10]="错误";}
+            total_score= Number(fillBlankScore) + Number(radioCheckboxScore) +fillTextareaScore;
+            var show_result1 = "你的答案结果为："+total_score;
+            $("p#show_result1").html(total_score);
+            console.log("每道题的正确情况"+answer_state);
+        }
+
+    </script>
+</head>
+<body  >
+<h2>考试结束！</h2>
+<input type="button" onclick="extract_answer_score()" value="查看结果">
+
+<p id="show_result1"></p>
+</body>
+</html>

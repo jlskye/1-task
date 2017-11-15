@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-COMPATIBLE" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1maximum-scale=1">
+    <link rel="stylesheet" href="./bootstrap.css">
+    <!--<script src="./jquery-3.2.1.js"></script>-->
+    <script src="jquery.min.js"></script>
+    <script src="./bootstrap.js"></script>
+    <title>online exam page</title>
+    <style>
+        td{
+            border: 0px solid transparent !important;
+        }
+        body{
+            width: 100%;
+            padding: 0;
+            margin: 30px 0px 25px 10px;
+        }
+        #header{
+            width: 100%;
+            overflow: hidden;
+            /*padding-bottom: -20px;*/
+            margin-bottom: -30px;
+        }
+        .myForm{
+            font-family: '华文宋体' ;font-size: 32px;
+            color: #0f0f0f;font-weight: 800;
+        }
+        .textInput{
+            width: 60px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        .title{
+            font-family: '宋体' ;font-size: 16px;
+            font-weight: bold;
+            margin:10px 15px 0px 0px;
+            color: #0f0f0f;
+        }
+        span{
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .blank{
+            display: block;
+            height: 20px;
+        }
+        .cal-btn{
+            display: block;
+            margin-top: 100px;
+            margin-left: 0px;
+        }
+        @media (min-width:400px) {
+        }
+        @media (min-width: 768px) {
+        }
+        @media (min-width: 992px) {
+        }
+        @media (min-width: 1200px) {
+            #header{
+                width: 500px;
+                overflow: hidden;
+                padding-bottom: 30px;
+            }
+            .myForm{
+                font-family: '华文宋体' ;font-size: 32px;
+                color: #0f0f0f;font-weight: 800;
+            }
+            .textInput{
+                width: 100px;
+                border-radius: 5px;
+            }
+        }
+    </style>
+    <script>
+        /*user clicked the submit button, collect stu_info and stu_result*/
+        function get_user_answer() {
+//           get stu_info and store this student infomation into array stu_info;
+            var fill_info=document.getElementsByName("stu_info");
+            var stu_info=[];
+            traverse_object(fill_info,stu_info);
+//            get student answer of section 1--填空题
+            var fill_blank=document.getElementsByName("section1");
+            var section1=[];
+            traverse_object(fill_blank,section1);
+
+//            get student answer of section 2--单选题
+            var section2=[];
+            var radio1=document.getElementsByName("radio1");
+            var radio2=document.getElementsByName("radio2");
+
+            traverse_object(radio1,section2);
+            traverse_object(radio2,section2);
+
+//            get student answer of section 3--多择题
+            var section3=[];
+            var checkbox1=document.getElementsByName("checkbox1");
+            var checkbox2=document.getElementsByName("checkbox2");
+            var temp=[];
+            traverse_object(checkbox1,temp);
+            var cbox1=temp.join("");
+            section3.push(cbox1);
+            temp=[];
+            traverse_object(checkbox2,temp);
+            var cbox2=temp.join("");
+//             section3.push(cbox1);
+             section3.push(cbox2);
+//            get student answer of section 4--判断题
+            var section4=[];
+            var radio3=document.getElementsByName("radio3");
+            var radio4=document.getElementsByName("radio4");
+
+            traverse_object(radio3,section4);
+            traverse_object(radio4,section4);
+
+//            get student answer of section 5--简答题
+            var objective_problem=document.getElementsByTagName("textarea");
+            var section5=[];
+            traverse_object(objective_problem,section5);
+            var stu_answer=[];
+            stu_answer=stu_answer.concat(stu_info,section1,section2,section3,section4,section5);
+//            var answer=stu_answer.join("-")
+            console.log(stu_answer);
+//            console.log(answer);
+
+//            return stu_answer in json format
+            var json=JSON.stringify(stu_answer);
+            return json;
+//            console.log(stu_info+'-'+section1+'-'+section1+'-'+section3+'-'+section4+'-'+section5);
+
+        }
+
+        /*traverse each of the constructor*/
+        function traverse_object(origin_object,target_object) {
+            for(let a of origin_object){
+                if(a.type=="text"){
+                    target_object.push(a.value);
+                }
+                else if(a.type=="radio"||a.type=="checkbox"){
+                    if(a.checked){target_object.push(a.value);}
+                }
+                else{
+                    target_object.push(a.value);
+                }
+            }
+
+        }
+
+        /*pop up comfirm dialog and redirect to another html*/
+        function confirm_and_submit() {
+            var json=get_user_answer();
+            var msg="请确认您的答案："+json+"\r\n您确认提交?";
+            return confirm(msg)==true?(window.location.href="result.html?section1="+4+"&json="+json): false;
+        }
+        
+        /*set the countdown timer for this exam,plus,dom already exist,then this function will operate the dom auto,[类似DOM加载完成后执行ready方法]。*/
+        $(function () {
+//            regulate that exam time is set as 10 minutes;
+            var min=10;
+            var sec=0;
+            setInterval(function () {
+                if(min>=0) {
+                    if (sec < 10) {
+                        $("#countdown_timer").html("距考试结束: " + min + "分:0" + sec + "秒");
+                    }
+                    else {
+                        $("#countdown_timer").html("距考试结束: " + min + "分:" + sec + "秒");
+                    }
+                    sec--;
+                    if (sec < 0) {
+                        min--;
+                        sec = 59;
+                    }
+
+                    if (min == 0 && sec < 1) {
+                        window.location.href = "result.html?section1="+4+"section2_and_section3="+4+"section4="+2+"section5="+1+"&json=" + get_user_answer();
+                    }
+                }
+            },1000)
+
+        })
+
+    </script>
+</head>
+
+<body>
+<!--write your code here-->
+<div id="header">
+    <div id="countdown_timer" style="color:red;float: left;margin-left: 10px;padding: 0 0 0 0;font-size: 18px"></div>
+
+    <table class="table col-sm-1 input-sm table-condensed">
+        <caption class="myForm">统一建模语言理论测试</caption>
+        <tr >
+            <td >考试科目:统一建模语言 </td>
+            <td >时间:10分钟 </td>
+            <td >得分:<span id="score"></span> </td>
+        </tr>
+        <tr >
+            <td>班级:&nbsp;&nbsp;<input type="text" name="stu_info" class="textInput"></td>
+            <td>学号:<input type="text" name="stu_info" class="textInput"></td>
+            <td>姓名:<input type="text" name="stu_info" class="textInput"></td>
+        </tr>
+    </table>
+</div>
+<div id="No1">
+    <div class="title">
+        一、填空题（每空5分，共20分）
+    </div><br/>
+    <div class="content">
+        <ol>
+            <li>UML的中文全称是: <input type="text" name="section1" class="textInput"></li>
+            <li>对象最突出的特征是: <input type="text" name="section1" class="textInput"> <input type="text" name="section1" class="textInput"> <input type="text" name="section1" class="textInput"></li>
+        </ol>
+    </div>
+</div>
+<div id="No2">
+    <div class="title">
+        二、选择题（每题10分，共20分）
+    </div><br/>
+    <div class="content">
+        <ol>
+            <form>
+                <li> UML与软件工程的关系是:<br>
+                    <div class="radio ">
+                        <label>
+                            <input type="radio" name="radio1" id="optionsRadios5" value="A">
+                            (A) UML就是软件工程
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="radio1" id="optionsRadios6" value="B">
+                            (B) UML参与到软件工程中软件开发过程的几个阶段
+                        </label>
+                    </div>
+                    <div class="radio  ">
+                        <label>
+                            <input type="radio" name="radio1" id="optionsRadios7" value="C"  >
+                            (C) UML与软件工程无关
+                        </label>
+                    </div>
+                    <div class="radio  ">
+                        <label>
+                            <input type="radio" name="radio1" id="optionsRadios8" value="D"  >
+                            (D) UML是软件工程的一部分
+                        </label>
+                    </div>
+                </li>
+
+                <li> Java语言支持:<br>
+                    <div class="radio ">
+                        <label>
+                            <input type="radio" name="radio2" id="optionsRadios1" value="A" >
+                            (A) 单继承
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="radio2" id="optionsRadios2" value="B">
+                            (B) 多继承
+                        </label>
+                    </div>
+                    <div class="radio  ">
+                        <label>
+                            <input type="radio" name="radio2" id="optionsRadios3" value="C"  >
+                            (C) 单继承和多继承都支持
+                        </label>
+                    </div>
+                    <div class="radio  ">
+                        <label>
+                            <input type="radio" name="radio2" id="optionsRadios4" value="D"  >
+                            (D) 单继承和多继承都不支持
+                        </label>
+                    </div>
+                </li>
+            </form>
+        </ol>
+    </div>
+</div>
+<div id="No3">
+    <div class="title">
+        三、多择题（每题10分，共20分）
+    </div><br/>
+    <div class="content">
+        <ol>
+            <form>
+                <li> 用例的粒度分为以下哪三种:<br>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="checkbox1" value="A" >
+                            (A) 概述级
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="checkbox1" value="B" >
+                            (B) 需求级
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="checkbox1" value="C" >
+                            (C) 用户目标级
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="checkbox1" value="D">
+                            (D) 子功能级
+                        </label>
+                    </div>
+                </li>
+            </form>
+            <form>
+                <li> 类图由以下那三部分组成:<br>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="checkbox2" value="A" >
+                            (A) 名称(Name)
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="checkbox2" value="B" >
+                            (B) 属性(Attribute)
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="checkbox2" value="C">
+                            (C) 操作(Operation)
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="checkbox2" value="D" >
+                            (D) 方法(Function)
+                        </label>
+                    </div>
+                </li>
+            </form>
+        </ol>
+    </div>
+</div>
+<div id="No4">
+    <div class="title">
+        四、判断题（每题10分，共20分）
+    </div><br/>
+    <div class="content">
+        <ol>
+            <li>
+                <form>用例图只是用于和客户交流和沟通的,用于确定需求。
+                    <label class="radio-inline">
+                        <input type="radio" name="radio3" value="T" id="radio-inline-1" > <span>√</span>
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="radio3" value="F" id="radio-inline-2"> <span>×</span>
+                    </label>
+                </form>
+            </li>
+            <li>
+                <form>在状态图中,终止状态在一个状态图中允许有任意多个。
+                    <label class="radio-inline">
+                        <input type="radio" name="radio4" value="T" id="radio-inline-3" > <span>√</span>
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="radio4" value="F" id="radio-inline-4"> <span>×</span>
+                    </label>
+                </form>
+            </li>
+        </ol>
+    </div>
+</div>
+<div id="No5">
+    <div class="title">
+        五、简答题（每题20分，共20分）
+    </div><br/>
+    <ol>
+        <li>
+            <div class="content">
+                <label>简述什么是模型以及模型的表现形式？</label><br>
+                &nbsp;&nbsp;<textarea class=" col-sm-6 col-lg-4 " rows="6"  ></textarea>
+            </div>
+        </li>
+    </ol>
+</div>
+<div class="blank"></div><input type="submit" value="计算分数"class="cal-btn" onclick="confirm_and_submit()" />
+
+<!-- Button trigger modal -->
+<!--<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">-->
+<!--Launch demo modal-->
+<!--</button>-->
+
+<!-- Modal -->
+</body>
+</html>
